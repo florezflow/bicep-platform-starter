@@ -5,7 +5,7 @@ every consumer pins an exact one. A pull request builds versions that aren't pub
 each configuration deploys as one deployment stack: previewed, approved, recorded, and retired
 when it's done.
 
-The write-up with the reasoning behind each piece: [Run Bicep at enterprise scale](https://florezflow.com/enterprise-bicep/).
+The write-up with the reasoning behind each piece: [Run Bicep like packages: pinned versions, one stack per lifecycle](https://florezflow.com/enterprise-bicep/).
 
 Everything a pull request checks runs offline, on your machine and in GitHub Actions. The Azure
 steps (publish to a registry, what-if, deploy) are switched off until you set `AZURE_ENABLED`.

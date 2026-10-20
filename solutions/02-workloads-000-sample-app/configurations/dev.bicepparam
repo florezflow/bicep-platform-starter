@@ -1,4 +1,4 @@
-using 'br/platform:solutions/02-workloads-000-sample-app:v1.0.0'
+using 'br/platform:solutions/02-workloads-000-sample-app:v1.1.0'
 
 var vSubscriptions = loadJsonContent('../../../platform.json').environments.dev.subscriptions
 
@@ -18,6 +18,8 @@ param pHub = {
 }
 
 param pAddressPrefix = '10.20.16.0/24'
+
+param pContainers = ['uploads']
 
 param pSecurityRules = [
   {

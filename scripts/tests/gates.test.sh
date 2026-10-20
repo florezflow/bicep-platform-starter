@@ -8,12 +8,13 @@ here=$(cd "$(dirname "$0")" && pwd)
 
 src=$(git -C "$here" rev-parse --show-toplevel)
 repo=$(mktemp -d)
-(cd "$src" && git ls-files -co --exclude-standard | tar -cf - -T -) | tar -xf - -C "$repo"
+git clone -q "$src" "$repo" # the history and the release tags
+(cd "$src" && git ls-files -co --exclude-standard | tar -cf - -T -) | tar -xf - -C "$repo" # plus what isn't committed
+(cd "$src" && git ls-files --deleted) | while IFS= read -r f; do rm -f "$repo/$f"; done
 cd "$repo" || exit 1
-git init -q -b main
 git config user.email test@example.com
 git config user.name test
-git add -A && git commit -qm "start"
+git add -A && git commit -qm "the working tree" --allow-empty
 
 edit() { # <file> <sed expression>: change a file in place, the same way on macOS and Linux
   sed -i.bak "$2" "$1" && rm "$1.bak"
@@ -28,13 +29,14 @@ bump() { # <component> <version>: what the bump-version skill does
 echo "-- a clean repo passes"
 check "versions agree" scripts/check-versions.sh
 check "every reference converts" scripts/convert-registry-refs.sh --state "$repo/.state"
-check "nothing needed a release" test ! -d .refcache
+check "prod's older pin is unpacked from its release tag" \
+  test -f .refcache/solutions/02-workloads-000-sample-app/v1.0.0/solutions/02-workloads-000-sample-app/main.bicep
 scripts/convert-registry-refs.sh --restore "$repo/.state"
 check "restore leaves no change behind" git diff --exit-code
 check "READMEs are current" scripts/update-readme.sh --check
 check "snapshots are current" scripts/check-snapshots.sh
 check "release tags are created" scripts/publish-components.sh --tags
-equals "one tag per component" "$(git tag -l | wc -l | tr -d ' ')" "$(find types modules solutions -name metadata.json | wc -l | tr -d ' ')"
+check "every component's version is tagged" bash -c '. scripts/lib.sh; for c in $(components); do tag_exists "$(tag_of "$c" "$(version_of "$c")")" || { echo "no tag for $c"; exit 1; }; done'
 
 echo "-- a released version can't change"
 echo "// a change" >> modules/network/nsg/main.bicep
@@ -58,7 +60,7 @@ edit modules/network/vnet/main.bicep "s|'br/platform:types:v1.0.0'|'../../../typ
 check_fails "a committed path into another component" "leaves the component" scripts/check-versions.sh
 git checkout -q -- .
 
-edit modules/storage/account/main.bicep "s/^metadata version = '1.0.0'/metadata version = '1.0.9'/"
+edit modules/network/vnet/main.bicep "s/^metadata version = '1.0.0'/metadata version = '1.0.9'/"
 check_fails "template and metadata.json disagree" "metadata.json says 1.0.0" scripts/check-versions.sh
 git checkout -q -- .
 

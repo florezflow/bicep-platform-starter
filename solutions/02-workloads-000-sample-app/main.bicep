@@ -1,6 +1,6 @@
 metadata name = 'Sample app'
 metadata description = 'One workload in its own subscription: a spoke network peered with the hub, a subnet with its own network security group, and a storage account only that subnet can reach.'
-metadata version = '1.0.0'
+metadata version = '1.1.0'
 
 targetScope = 'subscription'
 
@@ -23,6 +23,10 @@ param pSecurityRules securityRuleType[] = []
 
 @description('Redundancy of the storage account.')
 param pStorageSku storageSkuType = 'Standard_ZRS'
+
+@description('Blob containers in the storage account.')
+@metadata({ example: ['uploads'] })
+param pContainers string[] = []
 
 @description('DNS servers of the spoke. Empty uses the Azure-provided DNS.')
 @metadata({ example: ['10.10.4.4', '10.10.4.5'] })
@@ -60,13 +64,14 @@ module mAppNetwork 'br/platform:modules/network/app-network:v1.0.0' = {
   }
 }
 
-module mStorage 'br/platform:modules/storage/account:v1.0.0' = {
+module mStorage 'br/platform:modules/storage/account:v1.1.0' = {
   scope: rRg
   params: {
     pContext: pContext
     pName: 'sampleapp'
     pSku: pStorageSku
     pAllowedSubnetIds: [mAppNetwork.outputs.oSubnetId]
+    pContainers: pContainers
   }
 }
 

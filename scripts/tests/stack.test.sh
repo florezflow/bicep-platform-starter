@@ -72,7 +72,7 @@ echo "-- deploy"
 check "deploy runs" "$scripts/deploy-stack.sh" $app/dev deploy
 check "deploy creates the stack from the config, at its subscription" \
   grep -q "stack sub create --name $app-dev --location switzerlandnorth --subscription $dev_sub --parameters .*/solutions/$app/configurations/dev.bicepparam" "$AZ_LOG"
-check "the description names the version" grep -q "solutions/$app v1.0.0, dev" "$AZ_LOG"
+check "the description names the version the config pins" grep -q "solutions/$app v1.1.0, dev" "$AZ_LOG"
 check "management groups deploy at the tenant root group, detaching what leaves" bash -c \
   "'$scripts/deploy-stack.sh' 01-core-000-management-groups/prod deploy > /dev/null && grep -q 'stack mg create --name 01-core-000-management-groups-prod --location switzerlandnorth --management-group-id $tenant .*--action-on-unmanage detachAll' '$AZ_LOG'"
 check "an init solution names the version in its metadata.json" bash -c \

@@ -1,6 +1,6 @@
 metadata name = 'Storage account'
 metadata description = 'A storage account that only accepts Entra ID and traffic from the given subnets.'
-metadata version = '1.0.0'
+metadata version = '1.1.0'
 
 import { contextType, storageSkuType } from 'br/platform:types:v1.0.0'
 
@@ -19,6 +19,10 @@ param pSku storageSkuType = 'Standard_ZRS'
 
 @description('Subnets that may reach the account. Each subnet needs the Microsoft.Storage service endpoint.')
 param pAllowedSubnetIds string[] = []
+
+@description('Blob containers to create, none of them public.')
+@metadata({ example: ['uploads', 'reports'] })
+param pContainers string[] = []
 
 // --- Resources ---
 
@@ -42,6 +46,21 @@ resource rStorage 'Microsoft.Storage/storageAccounts@2026-06-01' = {
     }
   }
 }
+
+resource rBlobServices 'Microsoft.Storage/storageAccounts/blobServices@2026-06-01' = if (!empty(pContainers)) {
+  parent: rStorage
+  name: 'default'
+}
+
+resource rContainers 'Microsoft.Storage/storageAccounts/blobServices/containers@2026-06-01' = [
+  for container in pContainers: {
+    parent: rBlobServices
+    name: container
+    properties: {
+      publicAccess: 'None'
+    }
+  }
+]
 
 // --- Outputs ---
 

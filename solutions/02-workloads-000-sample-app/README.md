@@ -6,8 +6,8 @@ One workload in its own subscription: a spoke network peered with the hub, a sub
 
 | | |
 |---|---|
-| Version | `1.0.0` |
-| Use it | `using 'br/platform:solutions/02-workloads-000-sample-app:v1.0.0'` |
+| Version | `1.1.0` |
+| Use it | `using 'br/platform:solutions/02-workloads-000-sample-app:v1.1.0'` |
 | Deploys at | subscription scope |
 
 ## Parameters
@@ -19,6 +19,7 @@ One workload in its own subscription: a spoke network peered with the hub, a sub
 | [pAddressPrefix](#paddressprefix) | yes | string |
 | [pSecurityRules](#psecurityrules) | no | [securityRuleType](#securityruletype)[] |
 | [pStorageSku](#pstoragesku) | no | [storageSkuType](#storageskutype) |
+| [pContainers](#pcontainers) | no | string[] |
 | [pDnsServers](#pdnsservers) | no | string[] |
 
 ### pContext
@@ -53,6 +54,14 @@ Redundancy of the storage account.
 
 - Type: [storageSkuType](#storageskutype)
 - Default: `Standard_ZRS`
+
+### pContainers
+
+Blob containers in the storage account.
+
+- Type: string[]
+- Default: `[]`
+- Example: `["uploads"]`
 
 ### pDnsServers
 

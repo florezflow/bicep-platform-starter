@@ -6,8 +6,8 @@ A storage account that only accepts Entra ID and traffic from the given subnets.
 
 | | |
 |---|---|
-| Version | `1.0.0` |
-| Use it | `module m… 'br/platform:modules/storage/account:v1.0.0' = { … }` |
+| Version | `1.1.0` |
+| Use it | `module m… 'br/platform:modules/storage/account:v1.1.0' = { … }` |
 | Deploys at | resource group scope |
 
 ## Parameters
@@ -18,6 +18,7 @@ A storage account that only accepts Entra ID and traffic from the given subnets.
 | [pName](#pname) | yes | string |
 | [pSku](#psku) | no | [storageSkuType](#storageskutype) |
 | [pAllowedSubnetIds](#pallowedsubnetids) | no | string[] |
+| [pContainers](#pcontainers) | no | string[] |
 
 ### pContext
 
@@ -46,6 +47,14 @@ Subnets that may reach the account. Each subnet needs the Microsoft.Storage serv
 
 - Type: string[]
 - Default: `[]`
+
+### pContainers
+
+Blob containers to create, none of them public.
+
+- Type: string[]
+- Default: `[]`
+- Example: `["uploads","reports"]`
 
 ## Types
 

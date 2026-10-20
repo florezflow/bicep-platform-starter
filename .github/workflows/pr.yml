@@ -42,6 +42,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the gate tests clone the repo with its release tags
       - uses: ./.github/actions/setup-bicep
       - name: Shellcheck
         run: shellcheck scripts/*.sh scripts/tests/*.sh solutions/00-init-*/*.sh

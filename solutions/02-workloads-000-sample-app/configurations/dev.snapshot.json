@@ -108,6 +108,21 @@
       }
     },
     {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Storage/storageAccounts/stsampleappdevlqqlvt/blobServices/default",
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "name": "stsampleappdevlqqlvt/default",
+      "apiVersion": "2026-06-01"
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Storage/storageAccounts/stsampleappdevlqqlvt/blobServices/default/containers/uploads",
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "name": "stsampleappdevlqqlvt/default/uploads",
+      "apiVersion": "2026-06-01",
+      "properties": {
+        "publicAccess": "None"
+      }
+    },
+    {
       "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-sampleapp-dev-szn-001/virtualNetworkPeerings/peer-to-vnet-hub-dev-szn-001",
       "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
       "name": "vnet-sampleapp-dev-szn-001/peer-to-vnet-hub-dev-szn-001",

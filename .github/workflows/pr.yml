@@ -1,0 +1,62 @@
+# Every pull request: versions, build, READMEs, snapshots, scripts. No Azure access needed.
+# No paths filter: `gate` is the one required check, and a required check that doesn't run blocks the merge.
+name: pr
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  versions:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the release tags, for the bump check
+      - name: Versions and pins
+        run: scripts/check-versions.sh
+
+  bicep:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the release tags, to build older pinned versions
+      - uses: ./.github/actions/setup-bicep
+      - name: Build and lint
+        run: scripts/build.sh
+      - name: READMEs match the templates
+        if: ${{ !cancelled() }}
+        run: scripts/update-readme.sh --check
+      - name: Snapshots match the configurations
+        if: ${{ !cancelled() }}
+        run: scripts/check-snapshots.sh
+
+  scripts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-bicep
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh scripts/tests/*.sh solutions/00-init-*/*.sh
+      - name: Script tests
+        if: ${{ !cancelled() }}
+        run: scripts/tests/run.sh
+
+  gate:
+    if: ${{ always() }}
+    needs: [versions, bicep, scripts]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: All checks passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          for r in $RESULTS; do [ "$r" = success ] || exit 1; done

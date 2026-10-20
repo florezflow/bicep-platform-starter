@@ -1,0 +1,193 @@
+{
+  "predictedResources": [
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Contoso canary",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/00000000-0000-0000-0000-000000000000"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-platform",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Platform",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-landingzones",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-landingzones",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Landing zones",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-sandbox",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-sandbox",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Sandbox",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-decommissioned",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-decommissioned",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Decommissioned",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform-security",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-platform-security",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Security",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform-management",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-platform-management",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Management",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform-connectivity",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-platform-connectivity",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Connectivity",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform-identity",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-platform-identity",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Identity",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-landingzones-corp",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-landingzones-corp",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Corp",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-landingzones"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-landingzones-online",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-canary-landingzones-online",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Online",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-landingzones"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform-connectivity/subscriptions/00000000-0000-0000-0000-00000000d101",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-canary-platform-connectivity/00000000-0000-0000-0000-00000000d101",
+      "apiVersion": "2023-04-01"
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform-identity/subscriptions/00000000-0000-0000-0000-00000000d102",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-canary-platform-identity/00000000-0000-0000-0000-00000000d102",
+      "apiVersion": "2023-04-01"
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform-management/subscriptions/00000000-0000-0000-0000-00000000d103",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-canary-platform-management/00000000-0000-0000-0000-00000000d103",
+      "apiVersion": "2023-04-01"
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-platform-security/subscriptions/00000000-0000-0000-0000-00000000d104",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-canary-platform-security/00000000-0000-0000-0000-00000000d104",
+      "apiVersion": "2023-04-01"
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-canary-landingzones-corp/subscriptions/00000000-0000-0000-0000-00000000d201",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-canary-landingzones-corp/00000000-0000-0000-0000-00000000d201",
+      "apiVersion": "2023-04-01"
+    }
+  ],
+  "diagnostics": [],
+  "outputs": {
+    "oPlatformId": "contoso-canary-platform",
+    "oRootId": "contoso-canary"
+  }
+}

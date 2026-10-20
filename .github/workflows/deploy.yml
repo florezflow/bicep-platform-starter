@@ -1,0 +1,144 @@
+# Deploy one configuration as a deployment stack, or retire it. Started by hand from main, or by
+# rebuild.yml for a whole environment. Where the stack lives and what happens to resources it
+# stops managing come from platform.json, not from the person starting the run.
+#   resolve   which stack, where, and what changed since its last successful deployment (offline)
+#   preview   what-if and stack what-if, read-only identity      (only with AZURE_ENABLED)
+#   deploy    waits for approval on the environment, then deploys and records the deployment
+# Init solutions (00-init-*) aren't here: they run once, by hand, before this workflow can.
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: Configuration (solution/environment)
+        type: choice
+        options:
+          - 01-core-000-management-groups/dev
+          - 01-core-000-management-groups/prod
+          - 01-core-010-platform/dev
+          - 01-core-010-platform/prod
+          - 02-workloads-000-sample-app/dev
+          - 02-workloads-000-sample-app/prod
+      action:
+        description: Deploy the stack, or retire it with everything it manages
+        type: choice
+        options: [deploy, retire]
+        default: deploy
+  workflow_call:
+    inputs:
+      config:
+        description: Configuration (solution/environment)
+        type: string
+        required: true
+      action:
+        description: deploy or retire
+        type: string
+        default: deploy
+
+permissions:
+  contents: read
+
+env:
+  CONFIG: ${{ inputs.config }}
+  ACTION: ${{ inputs.action }}
+
+jobs:
+  resolve:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      deployments: read
+    outputs:
+      environment: ${{ steps.context.outputs.environment }}
+      stack: ${{ steps.context.outputs.stack }}
+    steps:
+      - name: Deploy from main only
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: |
+          echo "::error::deploy runs from main, not from $GITHUB_REF_NAME: only reviewed and published versions reach Azure"
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the commit of the last deployment, and the release tags
+      - uses: ./.github/actions/setup-bicep
+      - name: Stack, scope and environment
+        id: context
+        run: |
+          . scripts/lib.sh
+          stack_context "$CONFIG"
+          case "$SOLUTION" in 00-init-*) echo "::error::$SOLUTION is deployed by hand, once (README: Turn on Azure)"; exit 1 ;; esac
+          echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
+          echo "stack=$STACK_NAME" >> "$GITHUB_OUTPUT"
+          echo "### \`$STACK_NAME\` at $SCOPE_FLAG $TARGET_ID: $ACTION, actionOnUnmanage $UNMANAGE" >> "$GITHUB_STEP_SUMMARY"
+      - name: Changes since the last successful deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ENVIRONMENT: ${{ steps.context.outputs.environment }}
+          STACK: ${{ steps.context.outputs.stack }}
+        run: |
+          last=$(scripts/find-last-deployment.sh "$ENVIRONMENT" "$STACK")
+          if [ -z "$last" ]; then
+            echo "First deployment of $STACK: everything in the snapshot is new." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "Last successful ${last#* } of $STACK: ${last%% *}" | tee -a "$GITHUB_STEP_SUMMARY"
+          scripts/check-snapshots.sh --against "${last%% *}" "solutions/${CONFIG%%/*}/configurations/$ENVIRONMENT.bicepparam"
+
+  preview:
+    needs: resolve
+    if: ${{ vars.AZURE_ENABLED == 'true' }}
+    runs-on: ubuntu-24.04
+    environment: ${{ needs.resolve.outputs.environment }}-preview # the read-only identity, no approval
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-bicep
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true # the scripts name the subscription or management group
+      - name: What-if and stack what-if
+        run: scripts/preview-stack.sh "$CONFIG" "$ACTION"
+
+  deploy:
+    needs: [resolve, preview]
+    if: ${{ !cancelled() && needs.resolve.result == 'success' && (needs.preview.result == 'success' || needs.preview.result == 'skipped') }}
+    runs-on: ubuntu-24.04
+    environment: ${{ needs.resolve.outputs.environment }} # required reviewers approve here, after the preview
+    concurrency:
+      group: stack-${{ needs.resolve.outputs.stack }} # one change at a time per stack
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+      deployments: write # record the deployment for the next comparison
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Azure is off
+        if: ${{ vars.AZURE_ENABLED != 'true' }}
+        run: |
+          echo "AZURE_ENABLED isn't 'true': approved, but nothing deployed and nothing recorded." | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "With Azure on, this job runs: scripts/deploy-stack.sh $CONFIG $ACTION" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: ./.github/actions/setup-bicep
+        if: ${{ vars.AZURE_ENABLED == 'true' }}
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        if: ${{ vars.AZURE_ENABLED == 'true' }}
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+      - name: Deploy or retire the stack
+        if: ${{ vars.AZURE_ENABLED == 'true' }}
+        run: scripts/deploy-stack.sh "$CONFIG" "$ACTION"
+      - name: Record the deployment
+        if: ${{ vars.AZURE_ENABLED == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ENVIRONMENT: ${{ needs.resolve.outputs.environment }}
+          STACK: ${{ needs.resolve.outputs.stack }}
+          LOG_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: scripts/record-deployment.sh "$ENVIRONMENT" "$STACK" "$ACTION" "$LOG_URL"

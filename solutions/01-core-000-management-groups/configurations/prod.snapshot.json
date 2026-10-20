@@ -1,0 +1,193 @@
+{
+  "predictedResources": [
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Contoso",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/00000000-0000-0000-0000-000000000000"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-platform",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-platform",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Platform",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-landingzones",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-landingzones",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Landing zones",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-sandbox",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-sandbox",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Sandbox",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-decommissioned",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-decommissioned",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Decommissioned",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-platform-security",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-platform-security",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Security",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-platform"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-platform-management",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-platform-management",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Management",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-platform"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-platform-connectivity",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-platform-connectivity",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Connectivity",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-platform"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-platform-identity",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-platform-identity",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Identity",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-platform"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-landingzones-corp",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-landingzones-corp",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Corp",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-landingzones"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-landingzones-online",
+      "type": "Microsoft.Management/managementGroups",
+      "name": "contoso-landingzones-online",
+      "apiVersion": "2023-04-01",
+      "properties": {
+        "displayName": "Online",
+        "details": {
+          "parent": {
+            "id": "/providers/Microsoft.Management/managementGroups/contoso-landingzones"
+          }
+        }
+      }
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-platform-connectivity/subscriptions/00000000-0000-0000-0000-00000000f101",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-platform-connectivity/00000000-0000-0000-0000-00000000f101",
+      "apiVersion": "2023-04-01"
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-platform-identity/subscriptions/00000000-0000-0000-0000-00000000f102",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-platform-identity/00000000-0000-0000-0000-00000000f102",
+      "apiVersion": "2023-04-01"
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-platform-management/subscriptions/00000000-0000-0000-0000-00000000f103",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-platform-management/00000000-0000-0000-0000-00000000f103",
+      "apiVersion": "2023-04-01"
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-platform-security/subscriptions/00000000-0000-0000-0000-00000000f104",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-platform-security/00000000-0000-0000-0000-00000000f104",
+      "apiVersion": "2023-04-01"
+    },
+    {
+      "id": "/providers/Microsoft.Management/managementGroups/contoso-landingzones-corp/subscriptions/00000000-0000-0000-0000-00000000f201",
+      "type": "Microsoft.Management/managementGroups/subscriptions",
+      "name": "contoso-landingzones-corp/00000000-0000-0000-0000-00000000f201",
+      "apiVersion": "2023-04-01"
+    }
+  ],
+  "diagnostics": [],
+  "outputs": {
+    "oPlatformId": "contoso-platform",
+    "oRootId": "contoso"
+  }
+}

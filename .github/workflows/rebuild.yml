@@ -1,0 +1,74 @@
+# Bring a whole environment up, or back after a disaster: every configuration of the environment,
+# tier by tier, each through deploy.yml with its own preview and approval.
+#   plan        the environment's configurations from the folders (scripts/lib.sh configs_of)
+#   core        01-core-*, one after the other in folder order: management groups, then the platform
+#   workloads   02-workloads-*, in parallel, once the platform stands
+# Init solutions (00-init-*) aren't part of it: bootstrap and the registry come first, by hand.
+name: rebuild
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy, tier by tier
+        type: choice
+        options: [dev, prod]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rebuild-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      core: ${{ steps.plan.outputs.core }}
+      workloads: ${{ steps.plan.outputs.workloads }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Configurations, in deploy order
+        id: plan
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          . scripts/lib.sh
+          for tier in 01-core 02-workloads; do
+            key=${tier#*-}
+            list=$(configs_of "$ENVIRONMENT" "$tier" | jq -Rnc '[inputs]')
+            echo "$key=$list" >> "$GITHUB_OUTPUT"
+            echo "$tier: $list" | tee -a "$GITHUB_STEP_SUMMARY"
+          done
+
+  core:
+    needs: plan
+    if: ${{ needs.plan.outputs.core != '[]' }}
+    strategy:
+      max-parallel: 1 # in folder order: the platform deploys into management groups the first one creates
+      fail-fast: true # a failed tier stops the ones after it
+      matrix:
+        config: ${{ fromJSON(needs.plan.outputs.core) }}
+    permissions:
+      contents: read
+      deployments: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      config: ${{ matrix.config }}
+
+  workloads:
+    needs: [plan, core]
+    if: ${{ !cancelled() && needs.plan.outputs.workloads != '[]' && (needs.core.result == 'success' || needs.core.result == 'skipped') }}
+    strategy:
+      fail-fast: false # one workload's failure doesn't stop the others
+      matrix:
+        config: ${{ fromJSON(needs.plan.outputs.workloads) }}
+    permissions:
+      contents: read
+      deployments: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      config: ${{ matrix.config }}

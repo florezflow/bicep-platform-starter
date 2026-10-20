@@ -1,0 +1,35 @@
+{
+  "moduleAliases": {
+    "br": {
+      "platform": {
+        "registry": "crplatformprodszn001.azurecr.io",
+        "modulePath": "bicep"
+      }
+    }
+  },
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "rules": {
+        "max-outputs": { "level": "error" },
+        "max-params": { "level": "error" },
+        "max-resources": { "level": "error" },
+        "max-variables": { "level": "error" },
+        "nested-deployment-template-scoping": { "level": "error" },
+        "no-hardcoded-env-urls": { "level": "error" },
+        "no-unused-existing-resources": { "level": "error" },
+        "no-unused-imports": { "level": "error" },
+        "no-unused-params": { "level": "error" },
+        "no-unused-vars": { "level": "error" },
+        "outputs-should-not-contain-secrets": { "level": "error" },
+        "secure-secrets-in-params": { "level": "error" },
+        "use-secure-value-for-secure-inputs": { "level": "error" },
+        "use-recent-api-versions": { "level": "warning", "maxAllowedAgeInDays": 730 },
+        "use-safe-access": { "level": "warning" },
+        "explicit-values-for-loc-params": { "level": "off" },
+        "no-hardcoded-location": { "level": "off" },
+        "no-loc-expr-outside-params": { "level": "off" }
+      }
+    }
+  }
+}

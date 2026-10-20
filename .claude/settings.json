@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(scripts/check-versions.sh:*)",
+      "Bash(scripts/build.sh:*)",
+      "Bash(scripts/update-readme.sh:*)",
+      "Bash(scripts/check-snapshots.sh:*)",
+      "Bash(scripts/convert-registry-refs.sh:*)",
+      "Bash(scripts/tests/run.sh:*)",
+      "Bash(bicep build:*)",
+      "Bash(bicep build-params:*)",
+      "Bash(bicep lint:*)",
+      "Bash(bicep snapshot:*)",
+      "Bash(shellcheck:*)"
+    ],
+    "ask": [
+      "Bash(az deployment sub what-if:*)",
+      "Bash(az deployment mg what-if:*)",
+      "Bash(az stack-whatif:*)",
+      "Bash(scripts/preview-stack.sh:*)",
+      "Bash(solutions/00-init-000-bootstrap/bootstrap.sh --dry-run:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [
+      "Bash(az deployment sub create:*)",
+      "Bash(az deployment group create:*)",
+      "Bash(az deployment mg create:*)",
+      "Bash(az deployment tenant create:*)",
+      "Bash(az stack sub create:*)",
+      "Bash(az stack sub delete:*)",
+      "Bash(az stack mg create:*)",
+      "Bash(az stack mg delete:*)",
+      "Bash(az stack group create:*)",
+      "Bash(az stack group delete:*)",
+      "Bash(az acr repository update:*)",
+      "Bash(az acr repository delete:*)",
+      "Bash(az role assignment create:*)",
+      "Bash(az ad app create:*)",
+      "Bash(bicep publish:*)",
+      "Bash(scripts/deploy-stack.sh:*)",
+      "Bash(scripts/publish-components.sh:*)",
+      "Bash(solutions/00-init-000-bootstrap/bootstrap.sh --repo:*)",
+      "Bash(solutions/00-init-000-bootstrap/bootstrap.sh --github:*)",
+      "Bash(git push --force:*)",
+      "Bash(git tag -d:*)",
+      "Bash(git push --delete:*)",
+      "Edit(**/*.snapshot.json)",
+      "Write(**/*.snapshot.json)"
+    ]
+  }
+}

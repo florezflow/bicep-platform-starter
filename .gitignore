@@ -1,0 +1,8 @@
+# Released component versions that convert-registry-refs.sh unpacks from git tags
+.refcache/
+
+# Output of bicep build when someone forgets --stdout
+**/main.json
+**/*.parameters.json
+
+.DS_Store

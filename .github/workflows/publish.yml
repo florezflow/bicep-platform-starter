@@ -1,0 +1,50 @@
+# Every merge to main: release each component version that isn't released yet.
+# Tags always (they are the offline registry the pull request builds older pins from);
+# the Azure Container Registry only when the repository variable AZURE_ENABLED is 'true'.
+name: publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # once Azure is on, to publish what was tagged before
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  tags:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # push tags
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Versions and pins
+        run: scripts/check-versions.sh
+      - name: Tag new versions
+        run: scripts/publish-components.sh --tags --push
+
+  registry:
+    needs: tags
+    if: ${{ vars.AZURE_ENABLED == 'true' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write # OIDC login, no stored secret
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-bicep
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true # the registry and its subscription come from platform.json
+      - name: Publish and lock new versions
+        run: scripts/publish-components.sh --registry

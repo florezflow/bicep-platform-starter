@@ -1,0 +1,61 @@
+{
+  "bicepVersion": "v0.48.1",
+  "bicepSha256": "b09ec25a9d376c1f8e33ede6ed22b587f915ad68488d5db77a6f9541748c7f6e",
+  "tenantId": "00000000-0000-0000-0000-000000000000",
+  "location": "switzerlandnorth",
+  "registry": {
+    "name": "crplatformprodszn001",
+    "config": "00-init-010-module-registry/prod"
+  },
+  "identities": {
+    "deployerPrincipalId": "00000000-0000-0000-0000-0000000000a1",
+    "previewerPrincipalId": "00000000-0000-0000-0000-0000000000a2"
+  },
+  "environments": {
+    "dev": {
+      "subscriptions": {
+        "connectivity": "00000000-0000-0000-0000-00000000d101",
+        "identity": "00000000-0000-0000-0000-00000000d102",
+        "management": "00000000-0000-0000-0000-00000000d103",
+        "security": "00000000-0000-0000-0000-00000000d104",
+        "sampleApp": "00000000-0000-0000-0000-00000000d201"
+      }
+    },
+    "prod": {
+      "subscriptions": {
+        "connectivity": "00000000-0000-0000-0000-00000000f101",
+        "identity": "00000000-0000-0000-0000-00000000f102",
+        "management": "00000000-0000-0000-0000-00000000f103",
+        "security": "00000000-0000-0000-0000-00000000f104",
+        "sampleApp": "00000000-0000-0000-0000-00000000f201"
+      }
+    }
+  },
+  "solutions": {
+    "00-init-010-module-registry": {
+      "targets": {
+        "prod": { "subscription": "management" }
+      }
+    },
+    "01-core-000-management-groups": {
+      "actionOnUnmanage": "detachAll",
+      "whatIf": false,
+      "targets": {
+        "dev": { "tenantRootGroup": true },
+        "prod": { "tenantRootGroup": true }
+      }
+    },
+    "01-core-010-platform": {
+      "targets": {
+        "dev": { "managementGroup": "contoso-canary-platform" },
+        "prod": { "managementGroup": "contoso-platform" }
+      }
+    },
+    "02-workloads-000-sample-app": {
+      "targets": {
+        "dev": { "subscription": "sampleApp" },
+        "prod": { "subscription": "sampleApp" }
+      }
+    }
+  }
+}

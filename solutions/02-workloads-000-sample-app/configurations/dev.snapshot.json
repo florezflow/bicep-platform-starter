@@ -1,0 +1,146 @@
+{
+  "predictedResources": [
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001",
+      "type": "Microsoft.Resources/resourceGroups",
+      "name": "rg-sampleapp-dev-szn-001",
+      "apiVersion": "2025-04-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "sample-app",
+        "owner": "app-team"
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-sampleapp-dev-szn-001",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "vnet-sampleapp-dev-szn-001",
+      "apiVersion": "2026-01-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "sample-app",
+        "owner": "app-team"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.20.16.0/24"
+          ]
+        },
+        "dhcpOptions": null
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Network/networkSecurityGroups/nsg-app-dev-szn-001",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "nsg-app-dev-szn-001",
+      "apiVersion": "2026-01-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "sample-app",
+        "owner": "app-team"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-https-from-vnet",
+            "properties": {
+              "priority": 200,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "443"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-sampleapp-dev-szn-001/subnets/snet-app-dev-szn-001",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "vnet-sampleapp-dev-szn-001/snet-app-dev-szn-001",
+      "apiVersion": "2026-01-01",
+      "properties": {
+        "serviceEndpoints": [
+          {
+            "service": "Microsoft.Storage"
+          }
+        ],
+        "addressPrefix": "10.20.16.0/26",
+        "defaultOutboundAccess": false,
+        "networkSecurityGroup": {
+          "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Network/networkSecurityGroups/nsg-app-dev-szn-001"
+        }
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Storage/storageAccounts/stsampleappdevlqqlvt",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "stsampleappdevlqqlvt",
+      "apiVersion": "2026-06-01",
+      "location": "switzerlandnorth",
+      "sku": {
+        "name": "Standard_ZRS"
+      },
+      "kind": "StorageV2",
+      "tags": {
+        "workload": "sample-app",
+        "owner": "app-team"
+      },
+      "properties": {
+        "allowBlobPublicAccess": false,
+        "allowSharedKeyAccess": false,
+        "minimumTlsVersion": "TLS1_2",
+        "supportsHttpsTrafficOnly": true,
+        "networkAcls": {
+          "virtualNetworkRules": [
+            {
+              "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-sampleapp-dev-szn-001/subnets/snet-app-dev-szn-001",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Deny",
+          "bypass": "AzureServices"
+        }
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-sampleapp-dev-szn-001/virtualNetworkPeerings/peer-to-vnet-hub-dev-szn-001",
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "name": "vnet-sampleapp-dev-szn-001/peer-to-vnet-hub-dev-szn-001",
+      "apiVersion": "2026-01-01",
+      "properties": {
+        "remoteVirtualNetwork": {
+          "id": "/subscriptions/00000000-0000-0000-0000-00000000d101/resourceGroups/rg-hub-dev-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-hub-dev-szn-001"
+        },
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": false
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000d101/resourceGroups/rg-hub-dev-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-hub-dev-szn-001/virtualNetworkPeerings/peer-to-vnet-sampleapp-dev-szn-001",
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "name": "vnet-hub-dev-szn-001/peer-to-vnet-sampleapp-dev-szn-001",
+      "apiVersion": "2026-01-01",
+      "properties": {
+        "remoteVirtualNetwork": {
+          "id": "/subscriptions/00000000-0000-0000-0000-00000000d201/resourceGroups/rg-sampleapp-dev-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-sampleapp-dev-szn-001"
+        },
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": false
+      }
+    }
+  ],
+  "diagnostics": [],
+  "outputs": {
+    "oStorageAccountName": "stsampleappdevlqqlvt",
+    "oResourceGroupName": "rg-sampleapp-dev-szn-001"
+  }
+}

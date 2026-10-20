@@ -1,0 +1,319 @@
+{
+  "predictedResources": [
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f101/resourceGroups/rg-hub-prod-szn-001",
+      "type": "Microsoft.Resources/resourceGroups",
+      "name": "rg-hub-prod-szn-001",
+      "apiVersion": "2025-04-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f101/resourceGroups/rg-hub-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-hub-prod-szn-001",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "vnet-hub-prod-szn-001",
+      "apiVersion": "2026-01-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.10.0.0/22"
+          ]
+        },
+        "dhcpOptions": null
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f101/resourceGroups/rg-hub-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-hub-prod-szn-001/subnets/AzureFirewallSubnet",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "vnet-hub-prod-szn-001/AzureFirewallSubnet",
+      "apiVersion": "2026-01-01",
+      "properties": {
+        "serviceEndpoints": [],
+        "addressPrefix": "10.10.0.0/26",
+        "defaultOutboundAccess": null,
+        "networkSecurityGroup": null
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f101/resourceGroups/rg-hub-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-hub-prod-szn-001/subnets/GatewaySubnet",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "vnet-hub-prod-szn-001/GatewaySubnet",
+      "apiVersion": "2026-01-01",
+      "properties": {
+        "serviceEndpoints": [],
+        "addressPrefix": "10.10.0.64/27",
+        "defaultOutboundAccess": null,
+        "networkSecurityGroup": null
+      }
+    },
+    {
+      "id": "[resourceId('00000000-0000-0000-0000-00000000f101', 'rg-hub-prod-szn-001', 'Microsoft.Network/privateDnsZones', format('privatelink.blob.{0}', environment().suffixes.storage))]",
+      "type": "Microsoft.Network/privateDnsZones",
+      "name": "[format('privatelink.blob.{0}', environment().suffixes.storage)]",
+      "apiVersion": "2024-06-01",
+      "location": "global",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      }
+    },
+    {
+      "id": "[resourceId('00000000-0000-0000-0000-00000000f101', 'rg-hub-prod-szn-001', 'Microsoft.Network/privateDnsZones/virtualNetworkLinks', filter(split(format('{0}/{1}', format('privatelink.blob.{0}', environment().suffixes.storage), 'link-to-vnet-hub-prod-szn-001'), '/'), lambda('x', not(empty(lambdaVariables('x')))))[0], filter(split(format('{0}/{1}', format('privatelink.blob.{0}', environment().suffixes.storage), 'link-to-vnet-hub-prod-szn-001'), '/'), lambda('x', not(empty(lambdaVariables('x')))))[1])]",
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "name": "[format('{0}/{1}', format('privatelink.blob.{0}', environment().suffixes.storage), 'link-to-vnet-hub-prod-szn-001')]",
+      "apiVersion": "2024-06-01",
+      "location": "global",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      },
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "/subscriptions/00000000-0000-0000-0000-00000000f101/resourceGroups/rg-hub-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-hub-prod-szn-001"
+        }
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f103/resourceGroups/rg-management-prod-szn-001",
+      "type": "Microsoft.Resources/resourceGroups",
+      "name": "rg-management-prod-szn-001",
+      "apiVersion": "2025-04-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f103/resourceGroups/rg-management-prod-szn-001/providers/Microsoft.OperationalInsights/workspaces/log-management-prod-szn-001",
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "name": "log-management-prod-szn-001",
+      "apiVersion": "2026-03-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      },
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 90,
+        "features": {
+          "disableLocalAuth": true
+        }
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f104/resourceGroups/rg-security-prod-szn-001",
+      "type": "Microsoft.Resources/resourceGroups",
+      "name": "rg-security-prod-szn-001",
+      "apiVersion": "2025-04-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f104/resourceGroups/rg-security-prod-szn-001/providers/Microsoft.OperationalInsights/workspaces/log-security-prod-szn-001",
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "name": "log-security-prod-szn-001",
+      "apiVersion": "2026-03-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      },
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 365,
+        "features": {
+          "disableLocalAuth": true
+        }
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f104/resourceGroups/rg-security-prod-szn-001/providers/Microsoft.OperationalInsights/workspaces/log-security-prod-szn-001/providers/Microsoft.SecurityInsights/onboardingStates/default",
+      "type": "Microsoft.SecurityInsights/onboardingStates",
+      "name": "default",
+      "apiVersion": "2025-09-01",
+      "properties": {}
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f102/resourceGroups/rg-identity-prod-szn-001",
+      "type": "Microsoft.Resources/resourceGroups",
+      "name": "rg-identity-prod-szn-001",
+      "apiVersion": "2025-04-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f102/resourceGroups/rg-identity-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-identity-prod-szn-001",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "vnet-identity-prod-szn-001",
+      "apiVersion": "2026-01-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.10.4.0/24"
+          ]
+        },
+        "dhcpOptions": null
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f102/resourceGroups/rg-identity-prod-szn-001/providers/Microsoft.Network/networkSecurityGroups/nsg-domainservices-prod-szn-001",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "nsg-domainservices-prod-szn-001",
+      "apiVersion": "2026-01-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-rdp-from-corpnetsaw",
+            "properties": {
+              "priority": 201,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "CorpNetSaw",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "3389"
+            }
+          },
+          {
+            "name": "allow-psremoting-from-domainservices",
+            "properties": {
+              "priority": 301,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "AzureActiveDirectoryDomainServices",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "5986"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f102/resourceGroups/rg-identity-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-identity-prod-szn-001/subnets/snet-domainservices-prod-szn-001",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "vnet-identity-prod-szn-001/snet-domainservices-prod-szn-001",
+      "apiVersion": "2026-01-01",
+      "properties": {
+        "serviceEndpoints": [],
+        "addressPrefix": "10.10.4.0/27",
+        "defaultOutboundAccess": false,
+        "networkSecurityGroup": {
+          "id": "/subscriptions/00000000-0000-0000-0000-00000000f102/resourceGroups/rg-identity-prod-szn-001/providers/Microsoft.Network/networkSecurityGroups/nsg-domainservices-prod-szn-001"
+        }
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f102/resourceGroups/rg-identity-prod-szn-001/providers/Microsoft.AAD/domainServices/aaddscontoso.com",
+      "type": "Microsoft.AAD/domainServices",
+      "name": "aaddscontoso.com",
+      "apiVersion": "2025-06-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      },
+      "properties": {
+        "domainName": "aaddscontoso.com",
+        "sku": "Standard",
+        "domainConfigurationType": "FullySynced",
+        "filteredSync": "Disabled",
+        "replicaSets": [
+          {
+            "location": "switzerlandnorth",
+            "subnetId": "/subscriptions/00000000-0000-0000-0000-00000000f102/resourceGroups/rg-identity-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-identity-prod-szn-001/subnets/snet-domainservices-prod-szn-001"
+          }
+        ],
+        "notificationSettings": {
+          "notifyGlobalAdmins": "Enabled",
+          "notifyDcAdmins": "Enabled",
+          "additionalRecipients": [
+            "platform-team@contoso.com"
+          ]
+        },
+        "domainSecuritySettings": {
+          "ntlmV1": "Disabled",
+          "tlsV1": "Disabled",
+          "syncNtlmPasswords": "Disabled",
+          "kerberosRc4Encryption": "Disabled",
+          "kerberosArmoring": "Enabled",
+          "ldapSigning": "Enabled",
+          "channelBinding": "Enabled"
+        }
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f102/resourceGroups/rg-identity-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-identity-prod-szn-001/virtualNetworkPeerings/peer-to-vnet-hub-prod-szn-001",
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "name": "vnet-identity-prod-szn-001/peer-to-vnet-hub-prod-szn-001",
+      "apiVersion": "2026-01-01",
+      "properties": {
+        "remoteVirtualNetwork": {
+          "id": "/subscriptions/00000000-0000-0000-0000-00000000f101/resourceGroups/rg-hub-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-hub-prod-szn-001"
+        },
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": false
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f101/resourceGroups/rg-hub-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-hub-prod-szn-001/virtualNetworkPeerings/peer-to-vnet-identity-prod-szn-001",
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "name": "vnet-hub-prod-szn-001/peer-to-vnet-identity-prod-szn-001",
+      "apiVersion": "2026-01-01",
+      "properties": {
+        "remoteVirtualNetwork": {
+          "id": "/subscriptions/00000000-0000-0000-0000-00000000f102/resourceGroups/rg-identity-prod-szn-001/providers/Microsoft.Network/virtualNetworks/vnet-identity-prod-szn-001"
+        },
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": false
+      }
+    }
+  ],
+  "diagnostics": [],
+  "outputs": {
+    "oSecurityWorkspaceId": "/subscriptions/00000000-0000-0000-0000-00000000f104/resourceGroups/rg-security-prod-szn-001/providers/Microsoft.OperationalInsights/workspaces/log-security-prod-szn-001",
+    "oManagementWorkspaceId": "/subscriptions/00000000-0000-0000-0000-00000000f103/resourceGroups/rg-management-prod-szn-001/providers/Microsoft.OperationalInsights/workspaces/log-management-prod-szn-001",
+    "oHub": {
+      "subscriptionId": "00000000-0000-0000-0000-00000000f101",
+      "resourceGroupName": "rg-hub-prod-szn-001",
+      "name": "vnet-hub-prod-szn-001"
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "predictedResources": [
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f103/resourceGroups/rg-registry-prod-szn-001",
+      "type": "Microsoft.Resources/resourceGroups",
+      "name": "rg-registry-prod-szn-001",
+      "apiVersion": "2025-04-01",
+      "location": "switzerlandnorth",
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f103/resourceGroups/rg-registry-prod-szn-001/providers/Microsoft.ContainerRegistry/registries/crplatformprodszn001",
+      "type": "Microsoft.ContainerRegistry/registries",
+      "name": "crplatformprodszn001",
+      "apiVersion": "2025-11-01",
+      "location": "switzerlandnorth",
+      "sku": {
+        "name": "Standard"
+      },
+      "tags": {
+        "workload": "platform",
+        "owner": "platform-team"
+      },
+      "properties": {
+        "adminUserEnabled": false,
+        "anonymousPullEnabled": false
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f103/resourceGroups/rg-registry-prod-szn-001/providers/Microsoft.ContainerRegistry/registries/crplatformprodszn001/providers/Microsoft.Authorization/roleAssignments/cd471960-c5f0-52ef-a6d2-f51bfa34a71a",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "name": "cd471960-c5f0-52ef-a6d2-f51bfa34a71a",
+      "apiVersion": "2022-04-01",
+      "properties": {
+        "principalId": "00000000-0000-0000-0000-0000000000a1",
+        "principalType": "ServicePrincipal",
+        "roleDefinitionId": "/subscriptions/00000000-0000-0000-0000-00000000f103/providers/Microsoft.Authorization/roleDefinitions/8311e382-0749-4cb8-b61a-304f252e45ec"
+      }
+    },
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-00000000f103/resourceGroups/rg-registry-prod-szn-001/providers/Microsoft.ContainerRegistry/registries/crplatformprodszn001/providers/Microsoft.Authorization/roleAssignments/eb9068e2-2e93-5188-8daf-5be3b4c278cb",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "name": "eb9068e2-2e93-5188-8daf-5be3b4c278cb",
+      "apiVersion": "2022-04-01",
+      "properties": {
+        "principalId": "00000000-0000-0000-0000-0000000000a2",
+        "principalType": "ServicePrincipal",
+        "roleDefinitionId": "/subscriptions/00000000-0000-0000-0000-00000000f103/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d"
+      }
+    }
+  ],
+  "diagnostics": [],
+  "outputs": {
+    "oLoginServer": "[reference('/subscriptions/00000000-0000-0000-0000-00000000f103/resourceGroups/rg-registry-prod-szn-001/providers/Microsoft.ContainerRegistry/registries/crplatformprodszn001', '2025-11-01').loginServer]"
+  }
+}

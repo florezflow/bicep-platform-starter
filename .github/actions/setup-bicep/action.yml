@@ -1,0 +1,21 @@
+name: Set up Bicep
+description: >-
+  Install the Bicep CLI version pinned in platform.json, checked against its SHA-256, ahead of the
+  runner's own copy on PATH, and make az use it too. One version everywhere: an update is a pull request.
+runs:
+  using: composite
+  steps:
+    - name: Install the pinned Bicep CLI
+      shell: bash
+      run: |
+        version=$(jq -r '.bicepVersion' platform.json)
+        sha=$(jq -r '.bicepSha256' platform.json)
+        dir="$RUNNER_TEMP/bicep-$version"
+        mkdir -p "$dir"
+        curl -fsSL --retry 3 -o "$dir/bicep" "https://github.com/Azure/bicep/releases/download/$version/bicep-linux-x64"
+        echo "$sha  $dir/bicep" | sha256sum --check --quiet
+        chmod +x "$dir/bicep"
+        echo "$dir" >> "$GITHUB_PATH"
+        # az deployment, az stack and az stack-whatif compile with this binary, not a download of their own
+        echo "AZURE_BICEP_USE_BINARY_FROM_PATH=true" >> "$GITHUB_ENV"
+        "$dir/bicep" --version

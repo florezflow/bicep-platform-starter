@@ -4,8 +4,9 @@
 #   --tags            tag each new version as <component>/v<version> at HEAD (the offline registry)
 #   --push            push the new tags to origin
 #   --registry        publish each version missing from the Azure Container Registry in platform.json
-#                     and lock it, so a published version can never change underneath the people using it.
-#                     Init solutions are tagged, never published: they run before the registry exists.
+#                     and lock it, so a published version can never change underneath the people using it:
+#                     the version on this branch and every released one (its git tag), which older pins
+#                     still need. Init solutions are tagged, never published: they run before the registry exists.
 #
 # Run scripts/check-versions.sh first: it fails when a released version changed without a bump,
 # which this script would otherwise skip without a word.
@@ -58,17 +59,31 @@ if $registry; then
   published=0
   for c in $(components); do
     case "$c" in solutions/00-init-*) continue ;; esac
-    version=$(version_of "$c")
-    image="$modulepath/$c:v$version"
-    if az acr repository show --name "$acr" --subscription "$sub" --image "$image" --output none --only-show-errors 2>/dev/null; then
-      continue
-    fi
-    bicep publish "$ROOT/$c/main.bicep" --target "br:$server/$image"
-    az acr repository update --name "$acr" --subscription "$sub" --image "$image" \
-      --write-enabled false --delete-enabled false --output none --only-show-errors
-    published=$((published + 1))
-    echo "published and locked $server/$image"
-    summary "- published \`br/$ALIAS:$c:v$version\`"
+    current=$(version_of "$c")
+    for version in $({ echo "$current"; git -C "$ROOT" tag --list "$c/v*" | sed "s|^$c/v||"; } | grep -E "$SEMVER_RE" | sort -u); do
+      image="$modulepath/$c:v$version"
+      if az acr repository show --name "$acr" --subscription "$sub" --image "$image" --output none --only-show-errors 2>/dev/null; then
+        continue
+      fi
+      if [ "$version" = "$current" ]; then
+        file="$ROOT/$c/main.bicep"
+      else
+        # A released version from its tag, its references converted like any other
+        src="$ROOT/.refcache/publish/$(tag_of "$c" "$version")"
+        rm -rf "$src"
+        mkdir -p "$src"
+        git -C "$ROOT" archive "refs/tags/$(tag_of "$c" "$version")" "$c" | tar -x -C "$src"
+        # shellcheck disable=SC2046 # one argument per file
+        GITHUB_STEP_SUMMARY="" "$ROOT/scripts/convert-registry-refs.sh" $(find "$src" -name '*.bicep') > /dev/null
+        file="$src/$c/main.bicep"
+      fi
+      bicep publish "$file" --target "br:$server/$image"
+      az acr repository update --name "$acr" --subscription "$sub" --image "$image" \
+        --write-enabled false --delete-enabled false --output none --only-show-errors
+      published=$((published + 1))
+      echo "published and locked $server/$image"
+      summary "- published \`br/$ALIAS:$c:v$version\`"
+    done
   done
   echo "$published new version(s) in $server"
 fi

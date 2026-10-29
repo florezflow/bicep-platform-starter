@@ -16,7 +16,13 @@ case "$*" in
   "account show"*) echo 11111111-1111-1111-1111-111111111111 ;;
   "provider show"*) if [ -n "${EXISTS:-}" ]; then echo Registered; else echo NotRegistered; fi ;;
   "ad sp show"*|"ad group list"*|"role assignment list"*) if [ -n "${EXISTS:-}" ]; then echo some-id; else exit 1; fi ;;
+  "role definition list"*"[0].id"*) echo some-role-id ;; # found right after it was created
+  "role definition list"*) if [ -n "${EXISTS:-}" ]; then echo "${ROLE_ACTIONS:-[\"*/read\", \"Microsoft.Resources/deployments/validate/action\", \"Microsoft.Resources/deployments/whatIf/action\", \"Microsoft.Resources/deploymentStacksWhatIfResults/whatIf/action\", \"Microsoft.Resources/deploymentStacksWhatIfResults/write\"]}"; fi ;;
   "ad app list"*) if [ -n "${EXISTS:-}" ]; then echo some-app-id; fi ;;
+  "ad app federated-credential list"*"[].name"*)
+    if [ -n "${EXISTS:-}" ]; then
+      for s in ref:refs/heads/main environment:dev environment:prod environment:dev-preview environment:prod-preview; do echo "github-$s" | tr -c 'a-zA-Z0-9\n' '-'; done
+    fi ;;
   "ad app federated-credential list"*)
     if [ -n "${EXISTS:-}" ]; then
       for s in ref:refs/heads/main environment:dev environment:prod environment:dev-preview environment:prod-preview; do echo "repo:octo/demo:$s"; done
@@ -28,6 +34,7 @@ FAKE
 cat > "$fake/gh" <<'FAKE'
 #!/usr/bin/env bash
 echo "gh $*" >> "$AZ_LOG"
+case "$*" in "api repos/"*"/actions/oidc/customization/sub"*) echo "${SUB_PREFIX:-}" ;; esac
 FAKE
 chmod +x "$fake/az" "$fake/gh"
 export PATH="$fake:$PATH"
@@ -45,14 +52,15 @@ check_fails "the repository is required" "usage: bootstrap.sh" "$bootstrap" --dr
 dry="$fake/dry-run.txt"
 check "runs" bash -c "'$bootstrap' --repo octo/demo --dry-run --github > '$dry'"
 check "registers missing providers in every subscription" \
-  grep -q "would run: az provider register --namespace Microsoft.AAD --subscription 00000000-0000-0000-0000-00000000f201" "$dry"
+  grep -q "would run: az provider register --namespace Microsoft.AAD --subscription $(jq -r .environments.prod.subscriptions.sampleApp "$repo/platform.json")" "$dry"
 check "creates the Domain Controller Services service principal" grep -q "would run: az ad sp create --id 2565bd9d-da50-47d4-8b85-4c97f669dc36" "$dry"
 check "creates the AAD DC Administrators group" grep -q "would run: az ad group create --display-name AAD DC Administrators" "$dry"
 check "trusts main and the approved environments for the deployer" bash -c \
   "grep -c 'federated-credential create --id <github-demo-deployer app ID>' '$dry' | grep -qx 3"
 check "trusts only the preview environments for the previewer" grep -q 'federated-credential create --id <github-demo-previewer app ID> --parameters {"name":"github-environment-prod-preview","issuer":"https://token.actions.githubusercontent.com","subject":"repo:octo/demo:environment:prod-preview"' "$dry"
 check "the deployer is Owner at the tenant root group" grep -q "role assignment create --assignee-object-id <github-demo-deployer principal ID> --assignee-principal-type ServicePrincipal --role Owner --scope /providers/Microsoft.Management/managementGroups/11111111-1111-1111-1111-111111111111" "$dry"
-check "the previewer is Reader there" grep -q "role assignment create --assignee-object-id <github-demo-previewer principal ID> .*--role Reader" "$dry"
+check "creates a role for previews" grep -q "would run: az role definition create .*deploymentStacksWhatIfResults/write" "$dry"
+check "the previewer has it there" grep -q "role assignment create --assignee-object-id <github-demo-previewer principal ID> .*--role Deployment Previewer" "$dry"
 check "the previewer gets its own client ID in the preview environments" grep -q "would run: gh variable set AZURE_CLIENT_ID --repo octo/demo --env prod-preview" "$dry"
 check "nothing was changed in Azure or on GitHub" bash -c "! grep -E '$writes' '$AZ_LOG'"
 equals "platform.json is untouched" "$(cat "$repo/platform.json")" "$before"
@@ -60,13 +68,29 @@ equals "platform.json is untouched" "$(cat "$repo/platform.json")" "$before"
 echo "-- an existing setup"
 rm -f "$AZ_LOG"
 check "runs" bash -c "EXISTS=1 '$bootstrap' --repo octo/demo --dry-run > '$dry'"
-check "has nothing to change" bash -c "grep -q 'Reader at the tenant root group' '$dry' && ! grep -q 'would run' '$dry'"
+check "has nothing to change" bash -c "grep -q 'Deployment Previewer at the tenant root group' '$dry' && ! grep -q 'would run' '$dry'"
+
+echo "-- a preview role from an older bootstrap"
+rm -f "$AZ_LOG"
+check "runs" bash -c "EXISTS=1 ROLE_ACTIONS='[\"*/read\"]' '$bootstrap' --repo octo/demo --dry-run > '$dry'"
+check "updates the role in place" grep -q "would run: az role definition update .*deploymentStacksWhatIfResults/whatIf/action" "$dry"
+
+echo "-- a repository whose tokens carry immutable IDs"
+rm -f "$AZ_LOG"
+check "runs" bash -c "SUB_PREFIX='repo:octo@1/demo@2' '$bootstrap' --repo octo/demo --dry-run > '$dry'"
+check "trusts the subject GitHub signs with" grep -q '"subject":"repo:octo@1/demo@2:environment:dev"' "$dry"
+check "creates credentials with the usual names" grep -q '"name":"github-environment-dev",' "$dry"
+rm -f "$AZ_LOG"
+check "runs over credentials from before" bash -c "EXISTS=1 SUB_PREFIX='repo:octo@1/demo@2' '$bootstrap' --repo octo/demo --dry-run > '$dry'"
+check "updates them in place" bash -c \
+  "grep -c 'would run: az ad app federated-credential update --id some-app-id --federated-credential-id github-' '$dry' | grep -qx 5"
+check "creates none next to them" bash -c "! grep -q 'federated-credential create' '$dry'"
 
 echo "-- a real run"
 rm -f "$AZ_LOG"
 check "runs" "$bootstrap" --repo octo/demo
 check "creates the apps" grep -q "az ad app create --display-name github-demo-deployer" "$AZ_LOG"
-check "leaves GitHub alone without --github" bash -c "! grep -q '^gh ' '$AZ_LOG'"
+check "leaves GitHub alone without --github" bash -c "! grep -E '^gh (variable|api --method)' '$AZ_LOG'"
 equals "writes the tenant and both principals into platform.json" \
   "$(jq -c '[.tenantId, .identities.deployerPrincipalId, .identities.previewerPrincipalId]' "$repo/platform.json")" \
   '["11111111-1111-1111-1111-111111111111","new-principal-id","new-principal-id"]'

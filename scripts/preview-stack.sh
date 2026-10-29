@@ -74,10 +74,11 @@ if ! $exists; then
   exit 0
 fi
 # The same actionOnUnmanage and deny settings as the deployment, or the preview shows another outcome
+# The result is kept as a resource for 1 to 3 hours, no longer: Azure refuses anything else
 az stack-whatif "$SCOPE" create --name "$STACK_NAME" --stack-id "$STACK_ID" --location "$LOCATION" \
   "$SCOPE_FLAG" "$TARGET_ID" --parameters "$ROOT/$PARAMS" \
   --action-on-unmanage "$UNMANAGE" --deny-settings-mode "$DENY_MODE" \
-  --retention-interval P1D --validation-level ProviderNoRbac \
+  --retention-interval PT3H --validation-level ProviderNoRbac \
   --no-pretty-print --output json --only-show-errors > "$work/stack.json"
 
 jq -r '.properties.changes.resourceChanges // [] | group_by(.changeType)[] | "\(.[0].changeType): \(length)"' "$work/stack.json"

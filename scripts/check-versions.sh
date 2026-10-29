@@ -175,7 +175,7 @@ for f in $(bicep_files); do
   case "$component" in */configurations) component=$(dirname "$component") ;; esac
   for ref in $(grep -E "^[[:space:]]*(module|using)[[:space:]]|[[:space:]]from[[:space:]]" "$ROOT/$f" | grep -oE "'[^']+\.bicep'" | tr -d "'" || true); do
     case "$ref" in br/*|br:*|ts/*|ts:*) continue ;; esac
-    target=$(cd "$ROOT/$(dirname "$f")" && cd "$(dirname "$ref")" 2>/dev/null && pwd -P || true)
+    target=$(cd "$ROOT/$(dirname "$f")/$(dirname "$ref")" 2>/dev/null && pwd -P) || target=""
     case "$target/" in
       "$ROOT/$component/"*) ;;
       *) error "$f" "'$ref' leaves the component. Reference other components as br/$ALIAS:<path>:v<version>" ;;

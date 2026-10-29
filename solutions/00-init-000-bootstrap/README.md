@@ -17,7 +17,7 @@ Run it from the repo root as a Global Administrator with elevated access, signed
 | Resource providers | `Microsoft.AAD`, `Microsoft.ContainerRegistry`, `Microsoft.Network`, `Microsoft.OperationalInsights`, `Microsoft.SecurityInsights`, `Microsoft.Storage` in every subscription of `platform.json` | A deployment fails on an unregistered provider, and the deployer shouldn't need the right to register them |
 | Entra Domain Services prerequisites | The Domain Controller Services service principal and the `AAD DC Administrators` group | The managed domain needs both before it deploys; neither is an Azure resource a stack could own |
 | Deployer | App registration, federated credentials for `main`, `dev`, `prod`; Owner at the tenant root group | Creates management groups and moves subscriptions, which needs role assignment rights on them |
-| Previewer | App registration, federated credentials for `dev-preview`, `prod-preview`; Reader at the tenant root group | What-if and stack what-if, nothing else |
+| Previewer | App registration, federated credentials for `dev-preview`, `prod-preview`; Deployment Previewer at the tenant root group, a role the script creates: Reader plus what-if and stack what-if | What-if and stack what-if, nothing else |
 | `platform.json` | Writes `tenantId` and both principal IDs | The registry grants AcrPush and AcrPull to them |
 | GitHub, with `--github` | Creates the four environments, sets `AZURE_TENANT_ID` and `AZURE_CLIENT_ID` | The workflows read them; no secrets |
 

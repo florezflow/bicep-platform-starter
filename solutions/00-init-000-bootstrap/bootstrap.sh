@@ -9,7 +9,8 @@
 #   3. creates two app registrations that GitHub Actions signs in as, with OIDC credentials (no secrets):
 #        deployer   Owner at the tenant root group: creates management groups, moves subscriptions
 #                   (that needs role assignment rights on them), deploys and retires stacks
-#        previewer  Reader at the tenant root group: what-if and stack what-if, nothing else
+#        previewer  Deployment Previewer at the tenant root group, a role of its own: Reader plus
+#                   what-if and stack what-if, nothing else
 #   4. writes tenantId and both principal IDs into platform.json, for you to review and commit
 #   5. with --github: creates the GitHub environments and sets the variables the workflows read
 #
@@ -37,10 +38,15 @@ while [ $# -gt 0 ]; do
 done
 case "$repo" in */*) ;; *) echo "$usage" >&2; exit 2 ;; esac
 
-providers="Microsoft.AAD Microsoft.ContainerRegistry Microsoft.Network Microsoft.OperationalInsights Microsoft.SecurityInsights Microsoft.Storage"
+providers="Microsoft.AAD Microsoft.ContainerRegistry Microsoft.Network Microsoft.OperationalInsights Microsoft.OperationsManagement Microsoft.SecurityInsights Microsoft.Storage"
 dc_services_app_id=2565bd9d-da50-47d4-8b85-4c97f669dc36 # Domain Controller Services, the same in every tenant
 issuer=https://token.actions.githubusercontent.com
+preview_role="Deployment Previewer"
 name=${repo#*/}
+# What GitHub puts before :ref:… or :environment:… in the token subject. Newer repositories sign with
+# immutable IDs (repo:owner@123/name@456), older ones with repo:owner/name; GitHub knows which.
+subject_prefix=$(gh api "repos/$repo/actions/oidc/customization/sub" --jq .sub_claim_prefix 2>/dev/null || true)
+subject_prefix=${subject_prefix:-repo:$repo}
 
 ok() { printf '\033[32mOK\033[0m    %s\n' "$*"; }
 
@@ -51,14 +57,14 @@ run() {
 
 tenant=$(az account show --query tenantId --output tsv)
 tenant_root="/providers/Microsoft.Management/managementGroups/$tenant"
-echo "Tenant $tenant, repository $repo$($dry_run && echo ', dry run')"
+echo "Tenant $tenant, repository $repo (subject $subject_prefix)$($dry_run && echo ', dry run')"
 
 echo "== 1. Resource providers"
 for sub in $(jq -r '[.environments[].subscriptions[]] | unique[]' "$platform"); do
   for ns in $providers; do
     state=$(az provider show --namespace "$ns" --subscription "$sub" --query registrationState --output tsv 2>/dev/null || true)
     if [ "$state" = Registered ]; then ok "$ns in $sub"; continue; fi
-    run az provider register --namespace "$ns" --subscription "$sub"
+    run az provider register --namespace "$ns" --subscription "$sub" --wait # the next deployment needs it
   done
 done
 
@@ -66,19 +72,19 @@ echo "== 2. Entra Domain Services prerequisites"
 if az ad sp show --id "$dc_services_app_id" --query id --output tsv > /dev/null 2>&1; then
   ok "Domain Controller Services service principal"
 else
-  run az ad sp create --id "$dc_services_app_id"
+  run az ad sp create --id "$dc_services_app_id" --output none
 fi
 if [ -n "$(az ad group list --display-name "AAD DC Administrators" --query '[0].id' --output tsv)" ]; then
   ok "AAD DC Administrators group"
 else
   run az ad group create --display-name "AAD DC Administrators" --mail-nickname AADDCAdministrators \
-    --description "Administrators of the Entra Domain Services managed domain"
+    --description "Administrators of the Entra Domain Services managed domain" --output none
 fi
 
 # identity <role> <subject...>: an app registration with a service principal and one federated
 # credential per GitHub OIDC subject. Sets APP_ID and PRINCIPAL_ID.
 identity() {
-  local display="github-$name-$1" existing subject params
+  local display="github-$name-$1" existing names subject cred params
   shift
   APP_ID=$(az ad app list --display-name "$display" --query '[0].appId' --output tsv)
   if [ -n "$APP_ID" ]; then
@@ -101,12 +107,19 @@ identity() {
     echo "+ created service principal of $display ($PRINCIPAL_ID)"
   fi
   existing=$(az ad app federated-credential list --id "$APP_ID" --query '[].subject' --output tsv 2>/dev/null || true)
+  names=$(az ad app federated-credential list --id "$APP_ID" --query '[].name' --output tsv 2>/dev/null || true)
   for subject in "$@"; do
     if printf '%s\n' "$existing" | grep -qxF "$subject"; then ok "$display trusts $subject"; continue; fi
-    params=$(jq -nc --arg name "github-$(printf '%s' "${subject#repo:*/*:}" | tr -c 'a-zA-Z0-9' '-')" \
+    cred="github-$(printf '%s' "${subject#repo:*/*:}" | tr -c 'a-zA-Z0-9' '-')"
+    params=$(jq -nc --arg name "$cred" \
       --arg issuer "$issuer" --arg subject "$subject" \
       '{name: $name, issuer: $issuer, subject: $subject, audiences: ["api://AzureADTokenExchange"]}')
-    run az ad app federated-credential create --id "$APP_ID" --parameters "$params"
+    if printf '%s\n' "$names" | grep -qxF "$cred"; then
+      # The same credential with an older subject, such as one from before immutable IDs
+      run az ad app federated-credential update --id "$APP_ID" --federated-credential-id "$cred" --parameters "$params" --output none
+    else
+      run az ad app federated-credential create --id "$APP_ID" --parameters "$params" --output none
+    fi
   done
 }
 
@@ -117,20 +130,42 @@ assign() {
     return
   fi
   run az role assignment create --assignee-object-id "$1" --assignee-principal-type ServicePrincipal \
-    --role "$2" --scope "$tenant_root"
+    --role "$2" --scope "$tenant_root" --output none
 }
 
 echo "== 3. Identities for GitHub Actions"
 # The deployer signs in from main (publish.yml) and from the approved environments (deploy.yml)
-identity deployer "repo:$repo:ref:refs/heads/main" "repo:$repo:environment:dev" "repo:$repo:environment:prod"
+identity deployer "$subject_prefix:ref:refs/heads/main" "$subject_prefix:environment:dev" "$subject_prefix:environment:prod"
 deployer_app=$APP_ID
 deployer_principal=$PRINCIPAL_ID
 assign "$deployer_principal" Owner
 # The previewer only from the preview environments, which need no approval
-identity previewer "repo:$repo:environment:dev-preview" "repo:$repo:environment:prod-preview"
+identity previewer "$subject_prefix:environment:dev-preview" "$subject_prefix:environment:prod-preview"
 previewer_app=$APP_ID
 previewer_principal=$PRINCIPAL_ID
-assign "$previewer_principal" Reader
+# Reader isn't enough: what-if is an action on deployments, and stack what-if is an action on a
+# result it stores as a resource
+role=$(jq -nc --arg name "$preview_role" --arg scope "$tenant_root" '{
+  Name: $name,
+  Description: "Read everything, preview deployments and deployment stacks. Changes nothing.",
+  Actions: ["*/read", "Microsoft.Resources/deployments/validate/action", "Microsoft.Resources/deployments/whatIf/action",
+    "Microsoft.Resources/deploymentStacksWhatIfResults/whatIf/action", "Microsoft.Resources/deploymentStacksWhatIfResults/write"],
+  AssignableScopes: [$scope]
+}')
+actions=$(az role definition list --name "$preview_role" --scope "$tenant_root" --query '[0].permissions[0].actions' --output json 2>/dev/null || true)
+if [ "$(printf '%s' "${actions:-null}" | jq -c 'if type == "array" then sort else . end' 2>/dev/null)" = "$(jq -c '.Actions | sort' <<< "$role")" ]; then
+  ok "role $preview_role"
+elif [ -n "$actions" ] && [ "$actions" != null ] && [ "$actions" != "[]" ]; then
+  run az role definition update --output none --role-definition "$role"
+else
+  run az role definition create --output none --role-definition "$role"
+  # A new role takes a moment to reach every region
+  for _ in 1 2 3 4 5 6 7 8 9 10 11 12; do
+    if $dry_run || [ -n "$(az role definition list --name "$preview_role" --scope "$tenant_root" --query '[0].id' --output tsv 2>/dev/null || true)" ]; then break; fi
+    sleep 10
+  done
+fi
+assign "$previewer_principal" "$preview_role"
 
 echo "== 4. platform.json"
 current=$(jq -r '[.tenantId, .identities.deployerPrincipalId, .identities.previewerPrincipalId] | join(" ")' "$platform")

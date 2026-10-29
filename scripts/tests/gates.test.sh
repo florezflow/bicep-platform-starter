@@ -36,6 +36,7 @@ check "restore leaves no change behind" git diff --exit-code
 check "READMEs are current" scripts/update-readme.sh --check
 check "snapshots are current" scripts/check-snapshots.sh
 check "release tags are created" scripts/publish-components.sh --tags
+# shellcheck disable=SC2016 # expands in the inner shell
 check "every component's version is tagged" bash -c '. scripts/lib.sh; for c in $(components); do tag_exists "$(tag_of "$c" "$(version_of "$c")")" || { echo "no tag for $c"; exit 1; }; done'
 
 echo "-- a released version can't change"

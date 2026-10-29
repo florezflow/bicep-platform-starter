@@ -50,7 +50,7 @@ check_output "existing stack: a deletion is named" "the stack would delete /subs
   "$scripts/preview-stack.sh" $app/dev deploy
 check "stack what-if gets the stack id" \
   grep -q "stack-whatif sub create --name $app-dev --stack-id /subscriptions/$dev_sub/providers/Microsoft.Resources/deploymentStacks/$app-dev" "$AZ_LOG"
-check "stack what-if keeps its result for a day" grep -q "stack-whatif .*--retention-interval P1D" "$AZ_LOG"
+check "stack what-if keeps its result for the longest Azure allows" grep -q "stack-whatif .*--retention-interval PT3H" "$AZ_LOG"
 check_output "retire lists what the stack manages" "rg-sampleapp-dev-szn-001" "$scripts/preview-stack.sh" $app/dev retire
 
 echo "-- preview, management group stacks"

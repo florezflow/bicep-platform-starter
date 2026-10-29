@@ -9,7 +9,7 @@ The write-up with the reasoning behind each piece: [Run Bicep like packages: pin
 
 Everything a pull request checks runs offline, on your machine and in GitHub Actions. The Azure
 steps (publish to a registry, what-if, deploy) are switched off until you set `AZURE_ENABLED`.
-None of it has run against a real tenant yet: see [Not verified in Azure yet](#not-verified-in-azure-yet).
+The whole Azure path has run once in a real tenant, dev only: see [Tested in Azure](#tested-in-azure).
 
 ## The landing zone
 
@@ -118,6 +118,7 @@ for the first step, and the subscriptions already created.
 2. Bootstrap: `solutions/00-init-000-bootstrap/bootstrap.sh --dry-run --repo <owner>/<repo> --github`,
    read what it would do, then run it without `--dry-run`. Commit the IDs it writes into `platform.json`.
 3. Add required reviewers and the deployment branch `main` to the environments `dev` and `prod`.
+   GitHub offers required reviewers on public repositories, or on private ones with a paid plan.
 4. Deploy the registry, once, as the admin: `scripts/deploy-stack.sh 00-init-010-module-registry/prod deploy`.
 5. `gh variable set AZURE_ENABLED --body true`, then run `publish.yml` once by hand.
 6. Run `rebuild.yml` for dev, then for prod.
@@ -145,16 +146,30 @@ at the tenant root group.
   deletion blocked. A released version then stays what it was.
 - A branch ruleset on `main`: pull request required, status check `gate` required.
 
-## Not verified in Azure yet
+## Tested in Azure
 
-The offline checks and the scripts' tests pass; these need a first run in a real tenant:
+One run of the whole path in a test tenant: bootstrap, registry, `publish.yml`, then `deploy.yml`
+and `rebuild.yml` for dev, a redeploy, and every stack retired again. One subscription played
+every role, so dev's management groups placed it once; prod and Entra Domain Services didn't run.
 
-- A management group stack deploying into subscriptions two levels below it (the platform).
-  Fallback: one subscription stack per platform subscription, with the same composites.
-- A subscription stack creating the hub half of a peering in another subscription.
-- Whether Reader is enough for stack what-if, which stores its result as a resource.
-- Hub peerings surviving a redeployment of the hub network.
-- What-if at management group scope once the groups exist.
+| What | Result |
+|---|---|
+| A management group stack deploying into a subscription two levels below it (the platform) | Works |
+| A workload stack creating the hub's half of a peering | Works within one subscription; across subscriptions still untested |
+| Hub peerings surviving a redeploy of the hub network | They survive. Plain what-if lists the workload's peering as removed from the hub; stack what-if, which is right, doesn't |
+| Reader enough for what-if and stack what-if | No. The bootstrap creates the role Deployment Previewer: Reader plus validate, what-if and the stack what-if result |
+| What-if at management group scope once the groups exist | Works. `whatIf: false` is only needed until the first deployment has created them |
+
+What the run fixed:
+
+- The OIDC subject: newer repositories sign with immutable IDs (`repo:owner@123/name@456`); the
+  bootstrap asks GitHub for the prefix and updates older credentials in place.
+- The bootstrap waits for each resource provider, and registers `Microsoft.OperationsManagement`
+  for Sentinel.
+- Stack what-if keeps its result for 3 hours (`PT3H`), the longest Azure accepts.
+- `publish.yml` publishes every released version the registry lacks, from its tag, so older pins
+  resolve in a fresh registry too.
+- Scripts clean under shellcheck 0.11.
 
 ## License
 
